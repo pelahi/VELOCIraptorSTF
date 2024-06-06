@@ -469,6 +469,8 @@ struct Options
     int isubfindoutput = 0;
     ///flag indicating that VR is running on the fly
     bool iontheflyfinding = false;
+    ///flag for indicating  minimal properties calculated (useful for it is PICOLA (2lpt style) input)
+    bool ireducedhaloproperties = false;
 
     ///disable particle id related output like fof.grp or catalog_group data. Useful if just want halo properties
     ///and not interested in tracking. Code writes halo properties catalog and exits.

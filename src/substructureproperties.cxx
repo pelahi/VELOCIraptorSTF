@@ -5026,6 +5026,17 @@ void CalculateHaloProperties(Options &opt, const Int_t nbodies, Particle *Part, 
 
     noffset[0]=noffset[1]=0;
     for (i=2;i<=ngroup;i++) noffset[i]=noffset[i-1]+numingroup[i-1];
+    // calculate minimal properties for picola input
+    if (opt.ireducedhaloproperties) {
+        GetCM(opt, nbodies, Part, ngroup, pfof, numingroup, pdata, noffset);
+        GetFOFMass(opt, ngroup, numingroup, pdata);
+        AdjustHaloPositionForPeriod(opt, ngroup, numingroup, pdata);
+        for (i=1;i<=ngroup;i++) pdata[i].ibound=Part[noffset[i]].GetPID();
+        for (i=1;i<=ngroup;i++) pdata[i].iunbound=Part[noffset[i]+numingroup[i]-1].GetPID();
+        MEMORY_USAGE_REPORT(debug);
+        delete[] noffset;
+        return;
+    }
     //calculate properties and binding energies
     GetCM(opt, nbodies, Part, ngroup, pfof, numingroup, pdata, noffset);
     //GetFOFMass(opt, ngroup, numingroup, pdata);

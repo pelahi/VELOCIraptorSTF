@@ -1151,6 +1151,10 @@ void GetParamFile(Options &opt)
                         opt.numcellsperdim = atoi(vbuff);
                         opt.numcells = opt.numcellsperdim*opt.numcellsperdim*opt.numcellsperdim;
                     }
+                    // reduced halo properties 
+                    else if (strcmp(tbuff, "Calculate_reduced_halo_properties")==0)
+                        opt.ireducedhaloproperties = (atoi(vbuff)>0);
+
                     ///OpenMP related
                     else if (strcmp(tbuff, "OMP_run_fof")==0)
                         opt.iopenmpfof = atoi(vbuff);

@@ -480,6 +480,14 @@ int run(int argc,char **argv)
     //if want to ignore any information regard particles themselves as particle PIDS are meaningless
     //which might be useful for runs where not interested in tracking just halo catalogues (save for
     //approximate methods like PICOLA. Here it writes desired output and exits
+    if(opt.ireducedhaloproperties){
+        numingroup = BuildNumInGroup(Nlocal, ngroup, pfof);
+        CalculateHaloProperties(opt,Nlocal,Part.data(),ngroup,pfof,numingroup,pdata);
+        WriteProperties(opt,ngroup,pdata);
+        delete[] numingroup;
+        delete[] pdata;
+        finish_vr(opt);
+    }
     if(opt.inoidoutput){
         numingroup=BuildNumInGroup(Nlocal, ngroup, pfof);
         CalculateHaloProperties(opt,Nlocal,Part.data(),ngroup,pfof,numingroup,pdata);
@@ -487,7 +495,6 @@ int run(int argc,char **argv)
         if (opt.iprofilecalc) WriteProfiles(opt, ngroup, pdata);
         delete[] numingroup;
         delete[] pdata;
-
         finish_vr(opt);
     }
 
