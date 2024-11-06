@@ -801,7 +801,6 @@ void ReadRamses(Options &opt, vector<Particle> &Part, const Int_t nbodies, Parti
         RAMSES_fortran_read(Fpartage[i],   agetempchunk);
         RAMSES_fortran_read(Fpartmet[i],   mettempchunk);
 	RAMSES_fortran_read(Fpartfam[i],   famtempchunk2);
-
 	for(int nn=0; nn<chunksize; nn++) famtempchunk[nn]=famtempchunk2[nn]+0;
         //RAMSES_fortran_read(Fpartid[i],idvalchunk);
         for (int nn=0;nn<nchunk;nn++)
@@ -1051,6 +1050,7 @@ void ReadRamses(Options &opt, vector<Particle> &Part, const Int_t nbodies, Parti
         Fpartage[i].close();
         Fpartmet[i].close();
 	Fpartfam[i].close();
+
 #ifdef USEMPI
 
         //send information between read threads
@@ -1135,6 +1135,8 @@ void ReadRamses(Options &opt, vector<Particle> &Part, const Int_t nbodies, Parti
         RAMSES_fortran_read(Fhydro[i],header[i].gamma_index);
         //@}
     }
+
+
     for (i=0;i<opt.num_files;i++) if (ireadfile[i]) {
         //then apparently read ngridlevels, which appears to be an array storing the number of grids at a given level
         ngridlevel=new int[header[i].nlevelmax];
@@ -1378,7 +1380,7 @@ void ReadRamses(Options &opt, vector<Particle> &Part, const Int_t nbodies, Parti
     }
 #endif
     }//end of check if gas loaded
-
+	
     //update info
     opt.p*=opt.a/opt.h;
 #ifdef HIGHRES

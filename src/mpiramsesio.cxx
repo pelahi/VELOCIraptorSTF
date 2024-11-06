@@ -102,37 +102,67 @@ void MPIDomainDecompositionRAMSES(Options &opt){
 /// Domain Decomposition by Tree
 void MPIDomainDecompositionWithTree_GetNodeID(Node *node, Int_t *impi_leafID, Int_t &index)
 {
-	if(node->GetLeaf()>0) return;
 
-	Node *left, *right;
-	left = ((SplitNode *) node)->GetLeft();
-	right= ((SplitNode *) node)->GetRight();
-
-	if(left->GetLeaf()>0 && right->GetLeaf()>0){
+	if(node->GetLeaf()>0){
 		impi_leafID[index] = node->GetID();
 		index ++;
 	}
-	else
-	{
+	else{
+		Node *left, *right;
+		left = ((SplitNode *) node)->GetLeft();
+		right= ((SplitNode *) node)->GetRight();
+		
 		MPIDomainDecompositionWithTree_GetNodeID(left, impi_leafID, index);
 		MPIDomainDecompositionWithTree_GetNodeID(right, impi_leafID, index);
 	}
+
+//	if(node->GetLeaf()>0) return;
+//
+//	Node *left, *right;
+//	left = ((SplitNode *) node)->GetLeft();
+//	right= ((SplitNode *) node)->GetRight();
+//
+//	if(left->GetLeaf()>0 && right->GetLeaf()>0){
+//		impi_leafID[index] = node->GetID();
+//		index ++;
+//	}
+//	else
+//	{
+//		MPIDomainDecompositionWithTree_GetNodeID(left, impi_leafID, index);
+//		MPIDomainDecompositionWithTree_GetNodeID(right, impi_leafID, index);
+//	}
 }
 void MPIDomainDecompositionWithTree_NodeClose(Node *node, Int_t &node_id, Int_t &n_leaf)
 {
+
 	if(node->GetID() != node_id){
-		Node *left, *right;
 		if(node->GetLeaf()>0) return;
-		left = ((SplitNode *) node)->GetLeft();
-		right= ((SplitNode *) node)->GetRight();
+		Node *left, *right;
+		left = ((SplitNode *)node)->GetLeft();
+		right= ((SplitNode *)node)->GetRight();
 		MPIDomainDecompositionWithTree_NodeClose(left, node_id, n_leaf);
 		MPIDomainDecompositionWithTree_NodeClose(right, node_id, n_leaf);
 	}
 	else
 	{
-		node->SetLeaf(1);
-		n_leaf --;
-		return;
+		//node->SetLeaf(1);
+		//n_leaf --;
+		//return;
+		Node *sibling;
+		sibling = node->GetSibling();
+		if(node->GetLeaf()<0){
+			cout<<"%123123 ???"<<endl;
+			exit(9);
+		}
+
+		if(sibling->GetLeaf()>0){
+			Node *parent;
+			parent = node->GetParent();
+			parent->SetLeaf(1);
+			n_leaf --;
+			node_id = node->GetID();
+			return;
+		}
 	}
 }
 void MPIDomainDecompositionWithTree(Options &opt){
@@ -441,13 +471,14 @@ void MPIDomainDecompositionWithTree(Options &opt){
 	        //// GET LEAF ID
 	        impi_index=0;
 		MPIDomainDecompositionWithTree_GetNodeID(root, impi_leafID, impi_index);
-
 	        //// CLOSE Nodes
 	        for(Int_t i2=0; i2<impi_index; i2++){
 			if(impi_leafID[i2]<0) continue;
 			impi_nodeid = impi_leafID[i2];
+			Int_t impi_nleaf_old = impi_nleaf+0;
 	        	MPIDomainDecompositionWithTree_NodeClose(root, impi_nodeid, impi_nleaf);
-			if(impi_nleaf == NProcs) break;
+			if(impi_nleaf_old != impi_nleaf) break;
+			//if(impi_nleaf == NProcs) break;
 		}
 
 	        delete[] impi_leafID;

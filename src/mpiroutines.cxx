@@ -436,6 +436,7 @@ void MPIAdjustDomainWithMesh(Options &opt)
 
 void MPIDomainDecompositionWithTree_SetBnd(Node *node, Int_t &index, Double_t &lscale)
 {
+cout<<"%123123 -- "<<node->GetID()<<" / "<<node->GetLeaf()<<endl;
 	if(node->GetLeaf()>0){
 		Int_t bstart, bend;
 		bstart	= node->GetStart();
@@ -449,8 +450,8 @@ void MPIDomainDecompositionWithTree_SetBnd(Node *node, Int_t &index, Double_t &l
 
 		Double_t cutval;
 		int cutdim;
-		cutdim = ((SplitNode*)(((SplitNode*)node)->GetParent()))->GetCutDim();
-		cutval = ((SplitNode*)(((SplitNode*)node)->GetParent()))->GetCutValue();
+		cutdim = ((SplitNode*)(node->GetParent()))->GetCutDim();
+		cutval = ((SplitNode*)(node->GetParent()))->GetCutValue();
 		for(int i=0; i<3; i++){
 			mpi_domain[index].bnd[i][0] = node->GetBoundary(i,0) / lscale;
 			mpi_domain[index].bnd[i][1] = node->GetBoundary(i,1) / lscale;
@@ -465,7 +466,7 @@ void MPIDomainDecompositionWithTree_SetBnd(Node *node, Int_t &index, Double_t &l
 				if(mpi_domain[index].bnd[i][1]!=cutval) mpi_domain[index].bnd[i][1] += 1e-8;
 
 			}
-			cout<<"%123123	: "<<mpi_domain[index].bnd[i][0]<<" - "<<mpi_domain[index].bnd[i][1]<<" / "<<node->GetCount()<<endl;
+			cout<<"%123123	: "<<mpi_domain[index].bnd[i][0]<<" - "<<mpi_domain[index].bnd[i][1]<<" / "<<node->GetCount()<<" / "<<index<<endl;
 		}
 		index ++;
 	}

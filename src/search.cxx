@@ -655,6 +655,8 @@ private(i,tid,xscaling,vscaling,js_time)
 #else
             tid=0;
 #endif
+
+
 	    js_time = MyGetTime();
             //if adaptive 6dfof, set params
             if (opt.fofbgtype==FOF6DADAPTIVE) paramomp[2+tid*20]=paramomp[7+tid*20]=vscale2array[i];
@@ -667,6 +669,8 @@ private(i,tid,xscaling,vscaling,js_time)
             xscaling=1.0/xscaling;vscaling=1.0/vscaling;
             //treeomp[tid]=new KDTree(&(Part.data()[noffset[i]]),numingroup[i],opt.Bsize,treeomp[tid]->TPHS,tree->KEPAN,100);
             treeomp[tid]=new KDTree(js_adt, &(Part.data()[noffset[i]]),numingroup[i],opt.Bsize,treeomp[tid]->TPHS,tree->KEPAN,100);
+
+
             pfofomp[i]=treeomp[tid]->FOF(1.0,ngomp[i],minsize,1,&Head[noffset[i]],&Next[noffset[i]],&Tail[noffset[i]],&Len[noffset[i]]);
 
 	    js_nstep++;
@@ -1070,7 +1074,6 @@ Int_t* SearchSubset(Options &opt, const Int_t nbodies, const Int_t nsubset, Part
     // Need to sort particles as during MPI particle sendrecv the order
     // might change and can produce sightly different results
     vector<int> storetype(nsubset);
-
     //First store the index of this particle in the type data
     for(int i = 0; i < nsubset; i++) {
       storetype[i] = Partsubset[i].GetType();
@@ -1163,7 +1166,10 @@ Int_t* SearchSubset(Options &opt, const Int_t nbodies, const Int_t nsubset, Part
     //@{
     if (!(opt.foftype==FOFSTPROBNN||opt.foftype==FOFSTPROBNNLX||opt.foftype==FOFSTPROBNNNODIST||opt.foftype==FOF6DCORE)) {
         if (opt.iverbose>=2) cout<<"Building tree ... "<<endl;
-        tree=new KDTree(Partsubset,nsubset,opt.Bsize,tree->TPHYS);
+// new tree generator
+        //tree=new KDTree(Partsubset,nsubset,opt.Bsize,tree->TPHYS);
+        Double_t js_adt=1.0;
+        tree=new KDTree(js_adt, param, Partsubset,nsubset,opt.Bsize,tree->TPHYS);
         param[0]=tree->GetTreeType();
         //if large enough for statistically significant structures to be found then search. This is a robust search
         if (nsubset>=MINSUBSIZE) {
@@ -1215,6 +1221,7 @@ private(i,tid)
         if (opt.iverbose>=2) cout<<"Done"<<endl;
     }
     //@}
+
 
     //iteration to search region around streams using lower thresholds
     //determine number of groups
@@ -1471,7 +1478,9 @@ private(i,tid)
             GetOutliersValues(opt,nsubset,Partsubset,-1);
         }
         ///produce tree to search for 6d phase space structures
-        tree=new KDTree(Partsubset,nsubset,opt.Bsize,tree->TPHYS);
+        //tree=new KDTree(Partsubset,nsubset,opt.Bsize,tree->TPHYS);
+        Double_t js_adt = 1.;
+        tree=new KDTree(js_adt, Partsubset,nsubset,opt.Bsize,tree->TPHYS);
 
         //now begin fof6d search for large background objects that are missed using smaller grid cells ONLY IF substructures have been found
         //this search can identify merger excited radial shells so for the moment, disabled
@@ -1659,6 +1668,7 @@ private(i,tid)
         else {if (opt.iverbose>=2) cout<<ThisTask<<": "<<"NO SUBSTRUCTURES FOUND"<<endl;}
     }
     numsubs=numgroups;
+
 
     //ONCE ALL substructures are found, search for cores of major mergers with minimum size set by cell size since grid is quite large after bg search
     //for missing large substructure cores
@@ -2760,7 +2770,6 @@ inline void PreCalcSearchSubSet(Options &opt, Int_t subnumingroup,  Particle *&s
     GridCell *grid;
     Coordinate *gvel;
     Matrix *gveldisp;
-
     if (opt.iverbose) cout<< ThisTask<<" Substructure at sublevel "<<sublevel<<" with "<<subnumingroup
         <<" particles"<<endl;
     if (subnumingroup>=MINSUBSIZE&&opt.foftype!=FOF6DCORE) {
@@ -3055,6 +3064,7 @@ void SearchSubSub(Options &opt, const Int_t nsubset, vector<Particle> &Partsubse
             Int_t oldns = ns;
             ns = 0;
             Options opt2;
+
             #pragma omp parallel for \
             default(shared) private(subPart, subpfof, opt2, js_time) schedule(dynamic) \
             reduction(+:ns)
